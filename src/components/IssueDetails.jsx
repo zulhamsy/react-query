@@ -11,7 +11,7 @@ export default function IssueDetails() {
     ["issue", number],
     () => fetch(`/api/issues/${number}`).then((res) => res.json()),
     {
-      staleTime: 1000 * 10,
+      staleTime: 1000 * 60,
       initialData: () => {
         return queryClient
           .getQueryData(["issues"], { exact: false })

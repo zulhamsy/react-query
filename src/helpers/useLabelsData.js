@@ -1,16 +1,6 @@
 import { useQuery } from "react-query";
+import { defaultLabels } from "./defaultData";
 
-const labelPlaceholder = [
-  {
-    id: "bug",
-    color: "red",
-    name: "bug",
-  },
-  {
-    name: "question",
-    color: "orange",
-  },
-];
 export default function useLabelsData() {
   const labelsQuery = useQuery(
     ["labels"],
@@ -27,7 +17,7 @@ export default function useLabelsData() {
         throw new Error("Server Error - Unexpected response from server");
       return result;
     },
-    { placeholderData: labelPlaceholder, staleTime: Infinity },
+    { placeholderData: defaultLabels, staleTime: Infinity },
   );
 
   return labelsQuery;

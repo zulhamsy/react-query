@@ -17,13 +17,9 @@ export default function IssuesList({
         .map((label) => `labels[]=${label}`)
         .join("&");
       const statusUrl = selectedStatus ? `&status=${selectedStatus}` : "";
-      return modFetch(`/api/issues?${labelsUrl}${statusUrl}`, {
-        headers: {
-          "x-error": true,
-        },
-      });
+      return modFetch(`/api/issues?${labelsUrl}${statusUrl}`);
     },
-    { retry: false, staleTime: 1000 * 30 },
+    { retry: false, staleTime: 1000 * 60 * 5 },
   );
   const searchQuery = useQuery(
     ["issues", "search", searchKey],
