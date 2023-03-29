@@ -15,7 +15,7 @@ export default function IssueDetails() {
       initialData: () => {
         return queryClient
           .getQueryData(["issues"], { exact: false })
-          ?.find((item) => item.number === Number(number));
+          ?.find((item) => item.number.toString() === number);
       },
       initialDataUpdatedAt: () => {
         return queryClient.getQueryState(["issues"], { exact: false })

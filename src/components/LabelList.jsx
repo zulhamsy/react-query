@@ -1,14 +1,26 @@
+import { useQueryClient } from "react-query";
+import modFetch from "../helpers/modifiedFetch";
 import useLabelsData from "../helpers/useLabelsData";
 
 export default function LabelList({
   selectedLabels = [],
   changeSelectedLabels,
 }) {
+  const queryClient = useQueryClient();
   const labelsQuery = useLabelsData();
   const classObj = (labelId) => {
     if (selectedLabels.find((label) => label.id === labelId)) {
       return "selected";
     }
+  };
+  const prefetchIssues = async (labelId) => {
+    await queryClient.prefetchQuery(
+      ["issues", { labels: [labelId], status: "" }],
+      () => {
+        return modFetch(`/api/issues?labels[]=${labelId}`);
+      },
+      { staleTime: 1000 * 60 * 5 },
+    );
   };
   return (
     <>
@@ -26,6 +38,7 @@ export default function LabelList({
               <li key={label.id}>
                 <button
                   onClick={() => changeSelectedLabels(label)}
+                  onMouseEnter={() => prefetchIssues(label.id)}
                   className={`label ${label.color} ${classObj(label.id)}`}
                 >
                   {label.name}
