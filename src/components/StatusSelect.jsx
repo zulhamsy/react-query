@@ -7,7 +7,7 @@ export default function StatusSelect({ selectedStatusId, onChange }) {
       id="status"
       className="status-select"
       onChange={(e) => onChange(e.target.value)}
-      defaultValue="default"
+      value={selectedStatusId || "default"}
     >
       <option disabled value="default">
         Select a status

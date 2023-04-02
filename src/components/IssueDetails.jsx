@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import useUserData from "../helpers/useUserData";
 import IssueHeader from "./IssueHeader";
 import { relativeDate } from "../helpers/relativeDate";
+import { IssueStatus } from "./IssueStatus";
 
 export default function IssueDetails() {
   const { number } = useParams();
@@ -34,18 +35,29 @@ export default function IssueDetails() {
     <div className="issue-details">
       {issueQuery.isLoading ? <p>Fetching Issue Detail</p> : null}
       {issueQuery.isSuccess ? <IssueHeader {...issueQuery.data} /> : null}
-      {commentsQuery.isLoading ? <p>Fetching Comments</p> : null}
-      {commentsQuery.isSuccess ? (
-        <div>
-          {commentsQuery.data.map((comment) => (
-            <Comments key={comment.id} {...comment} />
-          ))}
-        </div>
-      ) : null}
+      <main>
+        {commentsQuery.isLoading ? (
+          <section>
+            <p>Fetching Comments</p>
+          </section>
+        ) : null}
+        {/* Comments */}
+        {commentsQuery.isSuccess ? (
+          <section>
+            {commentsQuery.data.map((comment) => (
+              <Comments key={comment.id} {...comment} />
+            ))}
+          </section>
+        ) : null}
+        {/* Aside */}
+        <aside>
+          {/* Status */}
+          <IssueStatus issue={issueQuery.data} />
+        </aside>
+      </main>
     </div>
   );
 }
-
 function Comments({ createdBy, createdDate, comment }) {
   const user = useUserData(createdBy);
   const relDate = relativeDate(createdDate);
