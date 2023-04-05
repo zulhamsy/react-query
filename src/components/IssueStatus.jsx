@@ -5,13 +5,16 @@ export function IssueStatus({ issue }) {
   const queryClient = useQueryClient();
   const statusMutation = useMutation(
     (status) => {
-      fetch(`/api/issues/${issue.number}`, {
+      return fetch(`/api/issues/${issue.number}`, {
         method: "PUT",
         headers: {
           "content-type": "application/json",
         },
         body: JSON.stringify({ status }),
-      }).then((res) => res.json());
+      }).then((res) => {
+        if (res.status !== 200) throw new Error("Gagal");
+        return res.json();
+      });
     },
     {
       onMutate: async (newStatus) => {
@@ -36,11 +39,13 @@ export function IssueStatus({ issue }) {
           context.previousValue,
         );
       },
-      onSettled: () => {
+      onSettled: (data, error, variable) => {
         // invalidate issue itu sendiri
-        queryClient.invalidateQueries(["issue", issue.number.toString()]);
+        queryClient.invalidateQueries(["issue", issue.number.toString()], {
+          exact: true,
+        });
         // invalidate list of issue karena kalo user ganti status, di home juga perlu update
-        queryClient.invalidateQueries(['issues'])
+        queryClient.invalidateQueries(["issues"]);
       },
     },
   );
