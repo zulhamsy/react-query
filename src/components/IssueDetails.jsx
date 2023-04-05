@@ -4,6 +4,7 @@ import useUserData from "../helpers/useUserData";
 import IssueHeader from "./IssueHeader";
 import { relativeDate } from "../helpers/relativeDate";
 import { IssueStatus } from "./IssueStatus";
+import { IssueAssignment } from "./IssueAssignment";
 
 export default function IssueDetails() {
   const { number } = useParams();
@@ -53,6 +54,11 @@ export default function IssueDetails() {
         <aside>
           {/* Status */}
           <IssueStatus issue={issueQuery.data} />
+          {/* Assignment */}
+          <IssueAssignment
+            assignee={issueQuery.data?.assignee || issueQuery.data?.createdBy}
+            issueNumber={issueQuery.data?.number}
+          />
         </aside>
       </main>
     </div>
