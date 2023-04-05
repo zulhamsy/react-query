@@ -4,17 +4,16 @@ import StatusSelect from "./StatusSelect";
 export function IssueStatus({ issue }) {
   const queryClient = useQueryClient();
   const statusMutation = useMutation(
-    (status) => {
-      return fetch(`/api/issues/${issue.number}`, {
+    async (status) => {
+      const res = await fetch(`/api/issues/${issue.number}`, {
         method: "PUT",
         headers: {
           "content-type": "application/json",
         },
         body: JSON.stringify({ status }),
-      }).then((res) => {
-        if (res.status !== 200) throw new Error("Gagal");
-        return res.json();
       });
+
+      return res.json();
     },
     {
       onMutate: async (newStatus) => {
