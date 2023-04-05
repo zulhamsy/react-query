@@ -14,8 +14,33 @@ export function IssueStatus({ issue }) {
       }).then((res) => res.json());
     },
     {
+      onMutate: async (newStatus) => {
+        // cancel ongoing query / fetches
+        await queryClient.cancelQueries(["issue", issue.number.toString()]);
+        // snapshot previous value
+        const previousValue = queryClient.getQueryData([
+          "issue",
+          issue.number.toString(),
+        ]);
+        // optimistically update cache data
+        queryClient.setQueryData(["issue", issue.number.toString()], (old) => {
+          return { ...old, status: newStatus };
+        });
+        // return old Data for context use, harus dibalikin ke dalam Object context
+        return { previousValue };
+      },
+      onError: (_err, _newStatus, context) => {
+        // kalo error balikin data ke previousValue
+        queryClient.setQueryData(
+          ["issue", issue.number.toString()],
+          context.previousValue,
+        );
+      },
       onSettled: () => {
+        // invalidate issue itu sendiri
         queryClient.invalidateQueries(["issue", issue.number.toString()]);
+        // invalidate list of issue karena kalo user ganti status, di home juga perlu update
+        queryClient.invalidateQueries(['issues'])
       },
     },
   );
