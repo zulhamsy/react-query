@@ -5,6 +5,7 @@ import IssueHeader from "./IssueHeader";
 import { relativeDate } from "../helpers/relativeDate";
 import { IssueStatus } from "./IssueStatus";
 import { IssueAssignment } from "./IssueAssignment";
+import { IssueLables } from "./IssueLables";
 
 export default function IssueDetails() {
   const { number } = useParams();
@@ -57,6 +58,11 @@ export default function IssueDetails() {
           {/* Assignment */}
           <IssueAssignment
             assignee={issueQuery.data?.assignee || issueQuery.data?.createdBy}
+            issueNumber={issueQuery.data?.number}
+          />
+          {/* Labels */}
+          <IssueLables
+            labelsId={issueQuery.data?.labels}
             issueNumber={issueQuery.data?.number}
           />
         </aside>
