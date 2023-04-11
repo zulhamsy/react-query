@@ -71,7 +71,7 @@ export function IssueLables({ labelsId = [], issueNumber }) {
     <div className="issue-options">
       <div>
         <span>Labels</span>
-        {labelQuery.data.length
+        {labelQuery.data?.length
           ? labelsId.map((labelId) => (
               <span
                 key={labelId}

@@ -6,9 +6,12 @@ import StatusSelect from "../components/StatusSelect";
 export default function Issues() {
   const [selectedLabelId, setSelectedLabelId] = useState([]);
   const [selectedStatusId, setSelectedStatusId] = useState("");
+  const [pageNum, setPageNum] = useState(1);
   const [searchKey, setSearchKey] = useState("");
 
   const handleChangeSelectedLabel = (label) => {
+    // ubah ke halaman awal
+    setPageNum(1);
     if (selectedLabelId.includes(label)) {
       let newSelectedLabels = [];
       newSelectedLabels = selectedLabelId.filter(
@@ -28,6 +31,8 @@ export default function Issues() {
             selectedStatus={selectedStatusId}
             searchKey={searchKey}
             onChangeSearchKey={setSearchKey}
+            page={pageNum}
+            onChangePageNum={setPageNum}
           />
         </section>
         {!searchKey.length ? (
@@ -39,7 +44,10 @@ export default function Issues() {
             <h3>Status</h3>
             <StatusSelect
               selectedStatusId={selectedStatusId}
-              onChange={setSelectedStatusId}
+              onChange={(statusId) => {
+                setPageNum(1);
+                setSelectedStatusId(statusId);
+              }}
             />
             <Link to="/add" className="button">
               Add Issue

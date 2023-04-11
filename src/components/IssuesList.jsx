@@ -8,18 +8,21 @@ export default function IssuesList({
   selectedStatus,
   searchKey,
   onChangeSearchKey,
+  page,
+  onChangePageNum,
 }) {
   const queryClient = useQueryClient();
   const issuesQuery = useQuery(
-    ["issues", { labels: selectedLabels, status: selectedStatus }],
+    ["issues", { labels: selectedLabels, status: selectedStatus, page: page }],
     () => {
       const labelsUrl = selectedLabels
         .map((label) => `labels[]=${label}`)
         .join("&");
       const statusUrl = selectedStatus ? `&status=${selectedStatus}` : "";
-      return modFetch(`/api/issues?${labelsUrl}${statusUrl}`);
+      const pageUrl = page > 1 ? `&page=${page}` : "";
+      return modFetch(`/api/issues?${labelsUrl}${statusUrl}${pageUrl}`);
     },
-    { retry: false, staleTime: 1000 * 60 * 5 },
+    { retry: false, staleTime: 1000 * 60 * 5, keepPreviousData: true },
   );
   const searchQuery = useQuery(
     ["issues", "search", searchKey],
@@ -70,21 +73,43 @@ export default function IssuesList({
       {/* selama tidak ada data dan masih fetching, pesan ini muncul */}
       {issuesQuery.isLoading ? <p>Loading...</p> : null}
       {issuesQuery.data && !searchKey.length ? (
-        <ul className="issues-list">
-          {issuesQuery.data.map((issue) => (
-            <IssueItem
-              key={issue.id}
-              title={issue.title}
-              labels={issue.labels}
-              number={issue.number}
-              status={issue.status}
-              assignee={issue.assignee}
-              createdBy={issue.createdBy}
-              createdDate={issue.createdDate}
-              commentCount={issue.comments.length}
-            />
-          ))}
-        </ul>
+        <>
+          <ul className="issues-list">
+            {issuesQuery.data.map((issue) => (
+              <IssueItem
+                key={issue.id}
+                title={issue.title}
+                labels={issue.labels}
+                number={issue.number}
+                status={issue.status}
+                assignee={issue.assignee}
+                createdBy={issue.createdBy}
+                createdDate={issue.createdDate}
+                commentCount={issue.comments.length}
+              />
+            ))}
+          </ul>
+          {/* pagination control */}
+          <div className="pagination">
+            <button
+              onClick={() => onChangePageNum(page - 1)}
+              disabled={page === 1}
+            >
+              Prev
+            </button>
+            <span>
+              Page {page} {issuesQuery.isFetching ? "..." : ""}
+            </span>
+            <button
+              onClick={() => onChangePageNum(page + 1)}
+              disabled={
+                issuesQuery.data.length < 10 || issuesQuery.isPreviousData
+              }
+            >
+              Next
+            </button>
+          </div>
+        </>
       ) : null}
 
       {/* query saat ada search key */}

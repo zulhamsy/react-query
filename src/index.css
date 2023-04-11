@@ -401,6 +401,9 @@ form input {
 .pagination button {
   width: max-content;
 }
+.pagination button:disabled {
+  opacity: 0.5;
+}
 .loader {
   animation: spin 1s steps(8) infinite;
   height: 1rem;
