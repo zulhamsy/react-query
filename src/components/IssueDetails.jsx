@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "react-query";
+import { useInfiniteQuery, useQuery, useQueryClient } from "react-query";
 import { useParams } from "react-router-dom";
 import useUserData from "../helpers/useUserData";
 import IssueHeader from "./IssueHeader";
@@ -6,6 +6,7 @@ import { relativeDate } from "../helpers/relativeDate";
 import { IssueStatus } from "./IssueStatus";
 import { IssueAssignment } from "./IssueAssignment";
 import { IssueLables } from "./IssueLables";
+import React from "react";
 
 export default function IssueDetails() {
   const { number } = useParams();
@@ -27,28 +28,55 @@ export default function IssueDetails() {
     },
   );
 
-  const commentsQuery = useQuery(
-    ["issue", number, "comments"],
-    () => fetch(`/api/issues/${number}/comments`).then((res) => res.json()),
-    { staleTime: Infinity },
-  );
+  // const commentsQuery = useQuery(
+  //   ["issue", number, "comments"],
+  //   () => fetch(`/api/issues/${number}/comments`).then((res) => res.json()),
+  //   { staleTime: Infinity },
+  // );
+
+  const infiniteCommentQuery = useInfiniteQuery({
+    queryKey: ["issue", number, "inf-comments"],
+    queryFn: ({ pageParam = 2 }) => {
+      return fetch(`/api/issues/${number}/comments?page=${pageParam}`).then(
+        (res) => res.json(),
+      );
+    },
+    staleTime: Infinity,
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < 10) return undefined;
+      return allPages.length + 1;
+    },
+  });
 
   return (
     <div className="issue-details">
       {issueQuery.isLoading ? <p>Fetching Issue Detail</p> : null}
       {issueQuery.isSuccess ? <IssueHeader {...issueQuery.data} /> : null}
       <main>
-        {commentsQuery.isLoading ? (
+        {infiniteCommentQuery.isLoading ? (
           <section>
             <p>Fetching Comments</p>
           </section>
         ) : null}
         {/* Comments */}
-        {commentsQuery.isSuccess ? (
+        {infiniteCommentQuery.isSuccess ? (
           <section>
-            {commentsQuery.data.map((comment) => (
+            {/* {commentsQuery.data.map((comment) => (
               <Comments key={comment.id} {...comment} />
+            ))} */}
+            {infiniteCommentQuery.data.pages.map((page, index) => (
+              <React.Fragment key={index}>
+                {page.map((comment) => (
+                  <Comments key={comment.id} {...comment} />
+                ))}
+              </React.Fragment>
             ))}
+            <button
+              onClick={() => infiniteCommentQuery.fetchNextPage()}
+              disabled={infiniteCommentQuery.isFetchingNextPage}
+            >
+              Load More
+            </button>
           </section>
         ) : null}
         {/* Aside */}
