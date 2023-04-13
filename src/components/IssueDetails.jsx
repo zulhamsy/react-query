@@ -6,7 +6,7 @@ import { relativeDate } from "../helpers/relativeDate";
 import { IssueStatus } from "./IssueStatus";
 import { IssueAssignment } from "./IssueAssignment";
 import { IssueLables } from "./IssueLables";
-import React from "react";
+import React, { useEffect } from "react";
 
 export default function IssueDetails() {
   const { number } = useParams();
@@ -27,6 +27,20 @@ export default function IssueDetails() {
       },
     },
   );
+
+  useEffect(() => {
+    const issuesQueryCache = queryClient.getQueryCache().findAll(["issues"]);
+    let mappedQuery = [];
+    issuesQueryCache.forEach((issueQuery) => {
+      if (issueQuery.state.data?.length) {
+        mappedQuery = [...mappedQuery, ...issueQuery.state.data];
+      }
+    });
+    const result = mappedQuery.find(
+      (issue) => issue.number.toString() === number,
+    );
+    console.log(result);
+  }, []);
 
   // const commentsQuery = useQuery(
   //   ["issue", number, "comments"],
