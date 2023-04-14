@@ -7,6 +7,7 @@ import { IssueStatus } from "./IssueStatus";
 import { IssueAssignment } from "./IssueAssignment";
 import { IssueLables } from "./IssueLables";
 import React from "react";
+import useTriggerScroll from "../helpers/useTriggerScroll";
 
 export default function IssueDetails() {
   const { number } = useParams();
@@ -26,7 +27,6 @@ export default function IssueDetails() {
             if (data[j].number.toString() === number) {
               resultData = data[j];
               resultState = issuesQueryCache[i].state;
-              console.log(resultState);
               break;
             }
           }
@@ -48,7 +48,7 @@ export default function IssueDetails() {
 
   const infiniteCommentQuery = useInfiniteQuery({
     queryKey: ["issue", number, "inf-comments"],
-    queryFn: ({ pageParam = 2 }) => {
+    queryFn: ({ pageParam = 1 }) => {
       return fetch(`/api/issues/${number}/comments?page=${pageParam}`).then(
         (res) => res.json(),
       );
@@ -59,6 +59,8 @@ export default function IssueDetails() {
       return allPages.length + 1;
     },
   });
+
+  useTriggerScroll(() => infiniteCommentQuery.fetchNextPage());
 
   return (
     <div className="issue-details">
@@ -83,12 +85,12 @@ export default function IssueDetails() {
                 ))}
               </React.Fragment>
             ))}
-            <button
-              onClick={() => infiniteCommentQuery.fetchNextPage()}
-              disabled={infiniteCommentQuery.isFetchingNextPage}
-            >
-              Load More
-            </button>
+            {infiniteCommentQuery.isFetchingNextPage ? (
+              <span>Loading more comments....</span>
+            ) : null}
+            {!infiniteCommentQuery.hasNextPage ? (
+              <span>You've reached the end</span>
+            ) : null}
           </section>
         ) : null}
         {/* Aside */}
