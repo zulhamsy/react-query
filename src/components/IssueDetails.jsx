@@ -6,41 +6,39 @@ import { relativeDate } from "../helpers/relativeDate";
 import { IssueStatus } from "./IssueStatus";
 import { IssueAssignment } from "./IssueAssignment";
 import { IssueLables } from "./IssueLables";
-import React, { useEffect } from "react";
+import React from "react";
 
 export default function IssueDetails() {
   const { number } = useParams();
   const queryClient = useQueryClient();
+  const issuesQueryCache = queryClient.getQueryCache().findAll(["issues"]);
+  let resultData, resultState;
   const issueQuery = useQuery(
     ["issue", number],
     () => fetch(`/api/issues/${number}`).then((res) => res.json()),
     {
       staleTime: 1000 * 60,
       initialData: () => {
-        return queryClient
-          .getQueryData(["issues"], { exact: false })
-          ?.find((item) => item.number.toString() === number);
+        for (let i = 0; i < issuesQueryCache.length; i++) {
+          const data = issuesQueryCache[i].state.data;
+          if (!data) continue;
+          for (let j = 0; j < data.length; j++) {
+            if (data[j].number.toString() === number) {
+              resultData = data[j];
+              resultState = issuesQueryCache[i].state;
+              console.log(resultState);
+              break;
+            }
+          }
+          if (resultData) break;
+        }
+        return resultData;
       },
       initialDataUpdatedAt: () => {
-        return queryClient.getQueryState(["issues"], { exact: false })
-          ?.dataUpdatedAt;
+        return resultState?.dataUpdatedAt;
       },
     },
   );
-
-  useEffect(() => {
-    const issuesQueryCache = queryClient.getQueryCache().findAll(["issues"]);
-    let mappedQuery = [];
-    issuesQueryCache.forEach((issueQuery) => {
-      if (issueQuery.state.data?.length) {
-        mappedQuery = [...mappedQuery, ...issueQuery.state.data];
-      }
-    });
-    const result = mappedQuery.find(
-      (issue) => issue.number.toString() === number,
-    );
-    console.log(result);
-  }, []);
 
   // const commentsQuery = useQuery(
   //   ["issue", number, "comments"],
