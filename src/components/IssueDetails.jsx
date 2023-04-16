@@ -7,7 +7,8 @@ import { IssueStatus } from "./IssueStatus";
 import { IssueAssignment } from "./IssueAssignment";
 import { IssueLables } from "./IssueLables";
 import React from "react";
-import useTriggerScroll from "../helpers/useTriggerScroll";
+// import useTriggerScroll from "../helpers/useTriggerScroll";
+import useInfiniteScroll from "react-infinite-scroll-hook";
 
 export default function IssueDetails() {
   const { number } = useParams();
@@ -20,18 +21,18 @@ export default function IssueDetails() {
     {
       staleTime: 1000 * 60,
       initialData: () => {
-        for (let i = 0; i < issuesQueryCache.length; i++) {
-          const data = issuesQueryCache[i].state.data;
-          if (!data) continue;
-          for (let j = 0; j < data.length; j++) {
-            if (data[j].number.toString() === number) {
-              resultData = data[j];
-              resultState = issuesQueryCache[i].state;
-              break;
-            }
+        // optimized using chatGPT
+        issuesQueryCache.find((obj) => {
+          const data = obj.state.data;
+          if (!data) return false;
+          const foundData = data.find((d) => d.number.toString() === number);
+          if (foundData) {
+            resultData = foundData;
+            resultState = obj.state;
+            return true;
           }
-          if (resultData) break;
-        }
+          return false;
+        });
         return resultData;
       },
       initialDataUpdatedAt: () => {
@@ -60,7 +61,12 @@ export default function IssueDetails() {
     },
   });
 
-  useTriggerScroll(() => infiniteCommentQuery.fetchNextPage());
+  // useTriggerScroll(document, () => infiniteCommentQuery.fetchNextPage(), 100);
+  const [sentryRef] = useInfiniteScroll({
+    loading: infiniteCommentQuery.isFetchingNextPage,
+    hasNextPage: infiniteCommentQuery.hasNextPage,
+    onLoadMore: infiniteCommentQuery.fetchNextPage,
+  });
 
   return (
     <div className="issue-details">
@@ -85,6 +91,7 @@ export default function IssueDetails() {
                 ))}
               </React.Fragment>
             ))}
+            <div ref={sentryRef} />
             {infiniteCommentQuery.isFetchingNextPage ? (
               <span>Loading more comments....</span>
             ) : null}
